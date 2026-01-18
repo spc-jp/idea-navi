@@ -159,6 +159,19 @@
             border-color: #0179E8;
         }
 
+        /* Menu Dropdown */
+        .menu-dropdown {
+            opacity: 0;
+            transform: scale(0.95) translateY(-10px);
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .menu-dropdown.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+
         /* Print Layout */
         @media print {
             body { background: white; color: black; }
@@ -198,15 +211,43 @@
 
     <!-- Header -->
     <header class="fixed top-0 left-0 w-full z-40 glass transition-all duration-300 no-print">
-        <div class="max-w-md mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="max-w-md mx-auto px-6 py-4 flex justify-between items-center relative">
             <div class="flex items-center gap-2 cursor-pointer" onclick="goToHero()">
                 <i class="fa-solid fa-arrows-spin text-brand dark:text-brand-light text-xl"></i>
                 <span class="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-brand to-brand-light">IdeaNavi</span>
             </div>
-            <button id="themeToggle" class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                <i class="fa-solid fa-moon dark:hidden"></i>
-                <i class="fa-solid fa-sun hidden dark:block"></i>
-            </button>
+            
+            <div class="flex items-center gap-3">
+                <!-- Guide Button -->
+                <button onclick="showGuideModal()" class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <i class="fa-solid fa-circle-question"></i>
+                </button>
+                
+                <!-- Settings Button -->
+                <button id="settingsBtn" onclick="toggleMenu()" class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors relative z-50">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+
+            <!-- Settings Dropdown -->
+            <div id="settingsMenu" class="menu-dropdown absolute top-16 right-4 w-60 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
+                <div class="p-2 space-y-1">
+                    <button id="themeToggle" class="w-full text-left px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-between group transition-colors">
+                        <span class="text-sm font-medium"><i class="fa-solid fa-circle-half-stroke mr-3 text-slate-400"></i>テーマ切替</span>
+                        <span class="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded group-hover:bg-white dark:group-hover:bg-slate-600">Auto</span>
+                    </button>
+                    <button onclick="fillDemoData()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-between group transition-colors">
+                        <span class="text-sm font-medium"><i class="fa-solid fa-wand-magic-sparkles mr-3 text-brand"></i>デモ入力</span>
+                    </button>
+                    <div class="h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
+                    <button onclick="resetApp()" class="w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 flex items-center justify-between transition-colors">
+                        <span class="text-sm font-medium"><i class="fa-solid fa-trash-can mr-3"></i>データクリア</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Overlay for closing menu -->
+            <div id="menuOverlay" onclick="closeMenu()" class="fixed inset-0 z-40 hidden"></div>
         </div>
     </header>
 
@@ -486,7 +527,7 @@
             <div class="no-print mb-6 flex justify-between items-center">
                 <h2 class="text-2xl font-bold">診断結果</h2>
                 <div class="flex gap-2">
-                    <button onclick="window.print()" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow flex items-center justify-center hover:text-brand transition-colors"><i class="fa-solid fa-print"></i></button>
+                    <!-- 印刷ボタン削除 -->
                     <button onclick="resetApp()" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow flex items-center justify-center hover:text-red-500 transition-colors"><i class="fa-solid fa-rotate-right"></i></button>
                 </div>
             </div>
@@ -555,14 +596,12 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="mt-8 grid grid-cols-2 gap-4 no-print">
-                <button onclick="copyResult()" class="col-span-1 bg-white dark:bg-slate-800 text-brand font-bold py-3 rounded-xl border border-brand hover:bg-brand/5 transition-colors">
-                    <i class="fa-regular fa-copy mr-2"></i>コピー
+            <div class="mt-8 flex flex-col gap-4 no-print">
+                <button onclick="copyResult()" class="w-full bg-white dark:bg-slate-800 text-brand font-bold py-4 rounded-xl border-2 border-brand hover:bg-brand/5 transition-colors shadow-md active:scale-95 transform duration-200">
+                    <i class="fa-regular fa-copy mr-2"></i>魔法プロンプト付きでコピー
                 </button>
-                <button onclick="window.print()" class="col-span-1 bg-slate-800 dark:bg-white text-white dark:text-slate-900 font-bold py-3 rounded-xl hover:opacity-90 transition-opacity">
-                    <i class="fa-solid fa-file-pdf mr-2"></i>PDF/印刷
-                </button>
-                <button onclick="startApp()" class="col-span-2 text-slate-400 text-sm py-2 hover:text-slate-600 transition-colors">
+                <!-- 印刷ボタン削除 -->
+                <button onclick="startApp()" class="w-full text-slate-400 text-sm py-2 hover:text-slate-600 transition-colors">
                     内容を修正して再診断
                 </button>
             </div>
@@ -572,7 +611,7 @@
                 <div class="absolute inset-0 bg-gradient-to-br from-brand/10 to-transparent"></div>
                 <h3 class="font-bold text-lg mb-2 relative z-10">このアイディア、形にしませんか？</h3>
                 <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 relative z-10">ヒヤリングから提案資料化、LP制作、アプリ開発まで伴走可能です。</p>
-                <a href="#contact" class="inline-block w-full bg-brand text-white font-bold py-3 rounded-xl shadow-lg relative z-10 hover:bg-brand-dark transition-colors">
+                <a href="https://www.smileplusctg.com/contact" target="_blank" rel="noopener noreferrer" class="inline-block w-full bg-brand text-white font-bold py-3 rounded-xl shadow-lg relative z-10 hover:bg-brand-dark transition-colors">
                     開発者に相談する
                 </a>
                 <p class="text-[10px] text-slate-400 mt-4 relative z-10">※現在はβ版テスト中です</p>
@@ -620,6 +659,69 @@
                     </div>
                     
                     <button onclick="closeModal()" class="w-full mt-6 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 py-3 rounded-xl font-bold text-sm">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Guide (New) -->
+    <div id="guideModal" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300" aria-hidden="true">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeGuideModal()"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-sm p-4">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-95 opacity-0" id="guideContent">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg"><i class="fa-solid fa-circle-question text-brand mr-2"></i>このアプリの使い方</h3>
+                        <button onclick="closeGuideModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-bold text-sm mb-2 text-slate-800 dark:text-slate-200">目的</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                                自社の「困りごと（負）」を視点を変えて「資源」と捉え直し、異業種のニーズと結びつけることで新しいビジネスアイディアを生み出します。
+                            </p>
+                        </div>
+
+                        <div>
+                             <h4 class="font-bold text-sm mb-3 text-slate-800 dark:text-slate-200">使い方の流れ</h4>
+                             <div class="space-y-3 relative">
+                                 <!-- Vertical Line -->
+                                 <div class="absolute left-3 top-2 bottom-2 w-0.5 bg-slate-200 dark:bg-slate-700"></div>
+                                 
+                                 <div class="flex gap-3 relative z-10">
+                                     <div class="w-6 h-6 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center shrink-0">1</div>
+                                     <div>
+                                         <p class="text-xs font-bold">困りごとの選択</p>
+                                         <p class="text-[10px] text-slate-400">コストや手間の原因を選びます</p>
+                                     </div>
+                                 </div>
+                                 <div class="flex gap-3 relative z-10">
+                                     <div class="w-6 h-6 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center shrink-0">2</div>
+                                     <div>
+                                         <p class="text-xs font-bold">資源への反転</p>
+                                         <p class="text-[10px] text-slate-400">困りごとを「エネルギー」等に読み替えます</p>
+                                     </div>
+                                 </div>
+                                 <div class="flex gap-3 relative z-10">
+                                     <div class="w-6 h-6 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center shrink-0">3</div>
+                                     <div>
+                                         <p class="text-xs font-bold">ニーズと業界のマッチング</p>
+                                         <p class="text-[10px] text-slate-400">その資源を欲しがる異業種を探します</p>
+                                     </div>
+                                 </div>
+                                 <div class="flex gap-3 relative z-10">
+                                     <div class="w-6 h-6 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center shrink-0">4</div>
+                                     <div>
+                                         <p class="text-xs font-bold">アイディア生成</p>
+                                         <p class="text-[10px] text-slate-400">具体案と次のアクションが提案されます</p>
+                                     </div>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="closeGuideModal()" class="w-full mt-6 bg-brand text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-brand/30">はじめる</button>
                 </div>
             </div>
         </div>
@@ -766,23 +868,34 @@
             const saved = localStorage.getItem('ideaApp_data');
             if (saved) {
                 formData = JSON.parse(saved);
-                
-                // Restore UI
-                formData.problems.forEach(v => check(`input[name="problems"][value="${v}"]`));
-                if(formData.problem_free) document.getElementById('problem_free').value = formData.problem_free;
-                
-                if(formData.resource) check(`input[name="resource"][value="${formData.resource}"]`);
-                
-                formData.needs.forEach(v => check(`input[name="needs"][value="${v}"]`));
-                document.getElementById('priority').value = formData.priority || 2;
-                
-                formData.target_industry.forEach(v => check(`input[name="target_industry"][value="${v}"]`));
-                if(formData.location) document.getElementById('location_feature').value = formData.location;
-                
-                if(formData.product_type) document.getElementById('product_type').value = formData.product_type;
-                document.getElementById('price_range').value = formData.price_range || 3;
-                if(formData.target_persona) document.getElementById('target_persona').value = formData.target_persona;
+                applyFormData();
             }
+        }
+
+        function applyFormData() {
+            // Clear current selection first
+            document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => el.checked = false);
+            
+            // Restore UI
+            formData.problems.forEach(v => check(`input[name="problems"][value="${v}"]`));
+            if(formData.problem_free) document.getElementById('problem_free').value = formData.problem_free;
+            else document.getElementById('problem_free').value = '';
+            
+            if(formData.resource) check(`input[name="resource"][value="${formData.resource}"]`);
+            
+            formData.needs.forEach(v => check(`input[name="needs"][value="${v}"]`));
+            document.getElementById('priority').value = formData.priority || 2;
+            
+            formData.target_industry.forEach(v => check(`input[name="target_industry"][value="${v}"]`));
+            if(formData.location) document.getElementById('location_feature').value = formData.location;
+            else document.getElementById('location_feature').value = '';
+            
+            if(formData.product_type) document.getElementById('product_type').value = formData.product_type;
+            document.getElementById('price_range').value = formData.price_range || 3;
+            if(formData.target_persona) document.getElementById('target_persona').value = formData.target_persona;
+            else document.getElementById('target_persona').value = '';
+            
+            updateUI();
         }
         
         function updateUI() {
@@ -802,10 +915,32 @@
         }
 
         function resetApp() {
-            if(confirm('入力内容をリセットしますか？')) {
+            if(confirm('入力内容をすべて消去しますか？')) {
                 localStorage.removeItem('ideaApp_data');
                 location.reload();
             }
+            closeMenu();
+        }
+
+        function fillDemoData() {
+            formData = {
+                problems: ['在庫ロス', '場所がない'],
+                problem_free: '',
+                resource: '空間・場所',
+                needs: ['冷やしたい・保存したい'],
+                priority: '3',
+                target_industry: ['物流', '飲食'],
+                location: '都市部・密集',
+                product_type: '空間レンタル',
+                price_range: '2',
+                target_persona: '駅近で倉庫を探しているEC事業者'
+            };
+            
+            applyFormData();
+            saveData();
+            showToast('デモデータを入力しました');
+            closeMenu();
+            startApp();
         }
 
         // --- Logic: Generate Result ---
@@ -855,12 +990,63 @@
             const p1 = document.getElementById('res_plan1').textContent;
             const p2 = document.getElementById('res_plan2').textContent;
             const p3 = document.getElementById('res_plan3').textContent;
+            const who = document.getElementById('res_who').textContent;
             
-            const text = `【循環アイディア診断結果】\n\n■アイディアの核\n${core}\n\n■提案1（スピード）\n${p1}\n\n■提案2（収益）\n${p2}\n\n■提案3（話題性）\n${p3}`;
+            const text = `【循環アイディア診断結果】
+
+■アイディアの核
+${core}
+
+■具体案
+1. スピード重視案: ${p1}
+2. 収益重視案: ${p2}
+3. 話題性重視案: ${p3}
+
+■ターゲット
+${who}
+
+--------------------------------------------------
+▼ アイディアを形にする魔法のプロンプト
+（この下をコピーしてNotebookLMなどに貼り付けると、スライド構成や図解案を出力できます）
+
+あなたは優秀なビジネスデザイナーです。以下の「循環型ビジネスアイディア」をもとに、この事業の魅力を伝えるための資料構成とインフォグラフィック案を作成してください。
+
+【入力情報】
+・コンセプト: ${core}
+・ターゲット: ${who}
+・展開案: 
+  - ${p1}
+  - ${p2}
+  - ${p3}
+
+【出力してほしいもの】
+1. 投資家向けピッチ資料の構成案（全5枚：課題、解決策、ビジネスモデル、市場性、将来性）
+2. コンセプトを一枚絵で説明するためのインフォグラフィックのラフ案（中央に何を置き、どう循環しているか言葉で説明）
+3. このビジネスが解決する「社会的意義」と「経済的合理性」の言語化
+--------------------------------------------------`;
             
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('クリップボードにコピーしました');
-            });
+            // Fallback for iframe restrictions where navigator.clipboard might be blocked
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";  // Avoid scrolling to bottom
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('魔法プロンプト付きでコピーしました');
+                } else {
+                    showToast('コピーに失敗しました');
+                }
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+                showToast('コピーエラーが発生しました');
+            }
+
+            document.body.removeChild(textArea);
         }
 
         function showToast(msg) {
@@ -874,30 +1060,57 @@
             }, 3000);
         }
 
-        // --- Modal ---
+        // --- Menu & Modals ---
+        function toggleMenu() {
+            const menu = document.getElementById('settingsMenu');
+            const overlay = document.getElementById('menuOverlay');
+            if (menu.classList.contains('active')) {
+                closeMenu();
+            } else {
+                menu.classList.add('active');
+                overlay.classList.remove('hidden');
+            }
+        }
+
+        function closeMenu() {
+            document.getElementById('settingsMenu').classList.remove('active');
+            document.getElementById('menuOverlay').classList.add('hidden');
+        }
+
         function showCaseStudy() {
-            const modal = document.getElementById('caseModal');
-            const content = document.getElementById('modalContent');
+            showModal('caseModal');
+        }
+
+        function closeModal() {
+            hideModal('caseModal');
+        }
+
+        function showGuideModal() {
+            showModal('guideModal', 'guideContent');
+        }
+
+        function closeGuideModal() {
+            hideModal('guideModal', 'guideContent');
+        }
+
+        function showModal(modalId, contentId = 'modalContent') {
+            const modal = document.getElementById(modalId);
+            const content = document.getElementById(contentId);
             modal.classList.remove('hidden');
-            // Force reflow
             void modal.offsetWidth; 
             modal.classList.remove('opacity-0');
-            
             setTimeout(() => {
                 content.classList.remove('scale-95', 'opacity-0');
                 content.classList.add('scale-100', 'opacity-100');
             }, 50);
         }
 
-        function closeModal() {
-            const modal = document.getElementById('caseModal');
-            const content = document.getElementById('modalContent');
-            
+        function hideModal(modalId, contentId = 'modalContent') {
+            const modal = document.getElementById(modalId);
+            const content = document.getElementById(contentId);
             content.classList.remove('scale-100', 'opacity-100');
             content.classList.add('scale-95', 'opacity-0');
-            
             modal.classList.add('opacity-0');
-            
             setTimeout(() => {
                 modal.classList.add('hidden');
             }, 300);
@@ -920,6 +1133,7 @@
                 } else {
                     localStorage.theme = 'light';
                 }
+                closeMenu();
             });
         }
     </script>
